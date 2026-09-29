@@ -225,6 +225,14 @@ co-author/branding constants, and the per-level review prompt.
 - **Keep content backups** (`*.json.bak_<reason>`) so any single edit is revertible.
 - **Remove scratch** (one-shot verify/dump scripts, `_verify/`, `_diag/` PNG folders) when done.
 - Point the user at the newest stamped file; flag older copies as superseded.
+- **Never run an age-based sweep on a folder that also holds SOURCE** (added 2026-09-20, N4 kanji).
+  The retention rule above is safe only while `N<lvl>_<Type>_Workbook/` contains deliverables plus
+  genuine inputs. Once the build modules, bank JSONs and the pending-items register live in the same
+  folder (which is where a "put everything for this workbook in one place" consolidation lands), an
+  "older than N days" rule matches them too: stable-named source carries no datetime stamp, so it is
+  *always* old. Scope a sweep to `old/` and exclude `*.py`, `*.json`, `*.md` and any `_refcache/`
+  even there. Check whether the folder is gitignored first: if it is, a wrong delete has no undo.
+  When a folder's contents change class, update the retention note that governs it in the same pass.
 
 ---
 
@@ -241,6 +249,232 @@ co-author/branding constants, and the per-level review prompt.
   EFS-encrypted; if the user's EFS key is unavailable, file reads fail with "Access denied" even though
   they own the files. That is an environment issue, not a build bug.
 - **Verify by rendering, never by assuming.** "It should work" is not evidence.
+
+## 13. Automated design/print-QA gates (added 2026-07-26, N4 kanji GD pass)
+
+A reviewer's 20-category book-design spec (negative space, margins, density, overflow, concatenation,
+line-break, typography, hierarchy, cards, pagination, PDF-technical, full-book consistency) was largely
+mechanised. Reusable checks (all in a `render_print_qa.py`-style renderer, PyMuPDF over the rendered PDF):
+
+- **PDF-BALANCE (negative space, the biggest previously-manual gate).** Rasterise each page (~48 DPI),
+  count dark rows in the central column band, and flag an *ordinary* page (exclude covers, world openers,
+  colophon, short blocks) whose longest ink-free band > ~30 % of the content height **AND** whose inked
+  fraction ≥ ~35 % (i.e. enough content to fill but clustered). This catches "content bunched at top,
+  big void below" without false-flagging genuinely sparse pages (design rule: sparse is fine for
+  openers/pauses/short blocks). On the N4 kanji book it flagged 84 pages and forced the fix below.
+- **The fix it forces = distribute, don't dump the void.** `.page`/`.kcard`/`.pcard` are flex columns;
+  top-aligning content + `margin-top:auto` on the footer strip collapses all slack into one dead gap.
+  Instead: `justify-content:space-between` (practice/answer cards → items spread to fill) or, for a card
+  that must read as evenly-spaced, `justify-content:space-evenly` + wrap each heading-with-its-content in
+  a `.sec` group (so headings hug content while the *inter-section* gaps become uniform = equal top,
+  bottom and between). This is how you get "equal top/bottom margin + uniform section spacing."
+- **Adaptive vs uniform fill (a real tension to decide per page type).** A flex-`1` grid *fills* the
+  leftover space (good for a writing/trace grid), but that conflicts with "uniform rhythm." If the ask is
+  uniform spacing, make the grid a normal fixed block and let `space-evenly` distribute; if the ask is
+  "fill the bottom," make it flex-grow. Don't do both.
+- **PDF text-layer fidelity (searchable/accessible layer, distinct from visible glyphs):**
+  - **PDF-NONEMPTY** — every content page has extractable text (only full-bleed image covers may be
+    text-less); catches an unexpected blank page.
+  - **PDF-TEXTCLEAN** — sampled Latin strings round-trip AND *no macron characters* appear in the
+    extracted text. **Chrome/Edge print-to-pdf corrupts precomposed macron vowels in subsetted fonts**
+    (ToUnicode bug: `Jōyō` → `Joōyoō`); the glyphs *print* correctly but copy/paste + search break.
+    **Fix: use ASCII romanisation (`Joyo`) for searchability** — do not chase the font-subset ToUnicode.
+  - **PDF-KINSOKU** — hard 行頭/行末 禁則 over every real wrap point (consecutive JP lines that drop to a
+    lower row in the same block; standalone labels like （れい） are their own block, not a wrap). Small-
+    kana line-starts are a *soft* rule → surface as a warning, don't gate.
+  - **Reading-integrity / split readings** — see §8: `あ (く)` in extracted text is an EXTRACTION
+    artifact, not a visual space, as long as the *source* reading is contiguous. Prove it with a source
+    check (no internal space in any reading) rather than trusting/eyeballing the PDF text layer.
+- **Offline-font parity (PDF-FONTDIFF).** Render a 2nd time with the web-font CDN blocked
+  (`--host-resolver-rules="MAP fonts.gstatic.com 127.0.0.1,MAP fonts.googleapis.com 127.0.0.1"`); the
+  fixed-page structure must keep the same page count + extracted text (font-independent). Per-page line
+  reflow will differ (font metrics) — surface it, don't gate. Confirms graceful offline degradation.
+- **Portability of embedded QA scripts:** discover the browser from env vars + PATH, never a hard-coded
+  `C:\…` literal (an embedded-script portability audit flags drive-letter paths).
+- **Morphology gates (MeCab via `fugashi`+`unidic-lite`), and their limits.** Reliable *deterministic*
+  checks: a FUTURE adverb + PAST predicate = temporal contradiction (`来年…来ました`) — but exclude the
+  *adnominal* `来年の…` (modifies a noun, doesn't govern tense); okurigana = the written kana tail must
+  equal the reading tail; readings contain no internal space. **DON'T ship a `fugashi` *surface*-POS
+  option-parallelism check** — surface POS is unreliable on the kana-written words common in N4 options
+  (na-adjectives tag 名詞, i-adjectives like つまらない tag 動詞, homographs みせ→見せ/動詞, counters vary),
+  giving ~100 % false positives. Reliable option-parallelism needs *dictionary* POS (JMdict adj-i/adj-na
+  /n), or leave it a human/HYBRID check.
+- **TC honesty for design rules:** aesthetic judgments (illustration "feel", card balance, hierarchy
+  nuance) get an automated *proxy* (BALANCE/geometry) but keep a MANUAL_RENDERED flag — never label a
+  pixel-aesthetic call a deterministic pass.
+
+---
+
+## 14. Answer-key integrity (added 2026-09-06, N4 kanji build; applies to every workbook type)
+
+**The single worst defect this project has shipped**, and every automated gate stayed green through it:
+**164 of 245 answer-key entries (67 %) pointed the learner at the wrong answer.**
+
+**Root cause: two independent numbering schemes that were free to drift.** The question pages numbered
+items with a running counter over a `type-group` render order (all 漢字読み first, then 表記, then
+文脈規定 ...). The answer key derived its number from the item ID (`int(id.split("Q")[1])`) and iterated
+the bank in FILE order. The two agree only when the bank file order happens to match the render order.
+It did not, because the "mixed review" slot (M5) holds items whose TYPE sends them back up into もんだい1.
+World 1 printed 立てました as question 6; the key filed it at 14 and put じぶん at 6.
+
+**Why nothing caught it.** Every existing check validated items in isolation: correct-option position,
+CORRECT marker placement, explanation-names-the-answer, per-bank counts. None compared the number
+PRINTED BESIDE THE QUESTION with the number PRINTED ON ITS KEY ENTRY. Bank validation passed 15/15
+throughout.
+
+**The invariant to build in, not to check for:**
+
+- Compute the display numbering **once**, from a single named constant for the section order, and have
+  both the page renderer and the answer key read that same map. Do not let the key re-derive a number
+  from an ID, a file position, or anything else.
+- Emit answer-key entries **sorted by that display number**, so entries run 1..N down the page.
+- **Assert equality at render time** so a future drift fails the build instead of shipping:
+  `assert DISPNUM[q_id] == printed_n`. A gate that runs after the fact is weaker than a build that
+  cannot produce the defect.
+
+**Regression check to keep:** parse the rendered HTML for every `question id -> printed number` and every
+`answer-key qid -> entry number`, and assert the two maps are identical for all N items. This runs in
+seconds and is the only check that would have caught the original bug.
+
+**Related trap - a stale checker outliving the bug.** The throwaway script written to MEASURE this
+defect replicated the old key logic. After the fix it kept reporting 164 mismatches against a correct
+build. Verify against the RENDERED artifact, and delete or update measurement scripts once the thing
+they model has changed.
+
+## 15. False-positive control for language audits (added 2026-09-06)
+
+An external reviewer with only the rendered PDF produced 26 findings over four rounds; 23 were real.
+Auditing without the source is legitimate and it found things the source-side scans missed, but these
+classes recur and must be triaged before reporting:
+
+- **Kana-headword collision.** Looking up a kana surface returns every homograph: あく gives a spring
+  wind, おおい gives "ahoy!", ことり gives "click", はな gives an emphasis particle. Look up the KANJI
+  form, or constrain by reading.
+- **English stemming.** "sells" vs "sell", "characters" vs "character", "uneasy" vs "uneasiness" are not
+  defects. Compare stems or accept substring matches in either direction.
+- **Naive de-conjugation.** 通って stems to 通る, missing 通う.
+- **One JMdict sense read as the whole entry.** A `uk` tag on a minor sense is not a ban on the kanji
+  (犬, 目, 会う, 味噌 are properly written in kanji). Conversely a gloss can be verbatim-attested and still
+  be the wrong sense to teach (see kanji manual class 21).
+- **PDF text-layer artifacts.** Extraction inserts spaces inside words and concatenates blocks. Confirm
+  every spacing or punctuation candidate against RENDERED PIXELS, not the text layer. In this cycle a
+  reviewer twice reported a missing hyphen (`かざ` for `かざ-`) that a 400 dpi crop showed present; it
+  renders as a short low-set dash.
+- **An intentionally wrong option in a usage question** is not a defect; being wrong is its job.
+- **Inverted threshold checks.** An aspect check that flags "habitual context + bare non-past" must fire
+  when NEITHER a habitual adverb NOR `ている` is present. After a fix ADDED まいあさ, the check kept firing
+  on the now-correct sentence. Re-read the check's polarity whenever it fires on something you just fixed.
+
+**Two coupling traps worth pre-empting on any gloss or reading edit:**
+
+1. **A same-card uniqueness rule can be tripped by fixing one entry.** Correcting 早い to "early; soon"
+   made three of four examples on the 早 card lead with "early", failing a "first sense unique per card"
+   gate. Budget for a second, compensating edit sourced from the same dictionary entry.
+2. **Never read a threshold gate flipping green as a fix.** A balance gate that had failed for three
+   builds went green in a pass that did not target it: the measured gap was unchanged (116 -> 117 rows
+   against a 103 limit) and only the ink fraction drifted across a 0.350 cut because an unrelated padding
+   change reflowed the page. When a long-standing failure disappears in an unrelated change, measure the
+   underlying quantities before recording it as resolved.
+
+---
+
+## 16. Relocating a build: what breaks that no gate reports (added 2026-09-20, N4 kanji)
+
+Consolidating a workbook's scripts, banks and state into its own folder is a good end-state, but the
+move itself has a failure mode that every green gate hides.
+
+**Do the dependency walk with the import graph, not from memory.** The first claim recorded on the
+N4 move ("the vocabulary build imports the kanji core") was wrong; a real import-graph walk showed
+the two closures share nothing. State the graph you actually walked, not the one you remember.
+
+**Classify every file by CONSUMER before moving it, not by topic.** A file that looks like workbook
+data can be read by a shipped website, a sibling level, or a downstream folder. On the N4 move
+`data/kanji.json` and `data/<level>_kanji_readings.json` had to stay put for exactly this reason
+(live site JS, a service worker, and 15 scripts in `tools/`), while a `mascot_assets/` folder assumed
+to be kanji-only turned out to be shared with the vocabulary build. **The test is "who reads it",
+not "what is it about".**
+
+**A scripted path rewrite misses at least three shapes.** Budget for hand fixes: (a) an alias, where
+a module reaches the parent through its own variable (`N4 = os.path.dirname(WB)`) and the pattern
+only matched the literal form; (b) a call whose `os.path.join(...)` **spans two source lines**, which
+a line-oriented regex cannot see; (c) any consumer OUTSIDE the moved set. Each of these surfaced only
+as a concrete runtime failure.
+
+**The dangerous one: an auto-downloading cache converts a broken path into a silent pass.** The N4
+`verify_kanji_data.py` lives in `tools/`, was not in the moved set, and still pointed at the old
+`_refcache/`. Because it auto-fetches a missing cache it re-downloaded 12 MB from edrdg.org and
+reported its usual `0 FAIL`. Nothing failed, so nothing surfaced. The real damage was a **split
+dictionary baseline**: that gate judged against a September JMdict while three sibling gates read the
+July archive, so two gates could legitimately disagree about the same word. Rules:
+
+- After moving a shared cache, grep its name across the **whole repo**, not the moved file set.
+- Prefer a resolver that checks the canonical location and **exits non-zero when absent**
+  (`print("BLOCKED: missing ..."); sys.exit(2)`) over one that quietly downloads a fresh snapshot.
+  An auto-download is convenient on a first run and a correctness hazard on every run after.
+- Re-run the gate after repointing and confirm the **findings are identical**, not merely that it
+  still passes. On the N4 fix: 0 FAIL / 13 with the same four advisory WARNs as before the move.
+- Keep the pre-move backup and the orphaned old cache until the new layout is trusted; do not delete
+  either as part of the move.
+
+## 17. Gloss an INFLECTED target word in its dictionary sense (added 2026-09-20, N4 kanji)
+
+A practice item whose `target_word` is inflected must carry the **dictionary** sense in its metadata
+gloss, never the tense or polarity the carrier sentence happens to supply. N4 MOCK-M4-Q28 underlined
+`帰って` inside `帰って いません` and glossed it **"returned home"**: the te-form has no tense of its
+own, the sentence is a negative present perfect, and the item's own explanation already said "hasn't
+returned". Corrected to "to go home; to return".
+
+Why no gate caught it, which is the part that generalises: the `meaning` field is **metadata for the
+review spreadsheet and is not rendered into the printed item**, so every render-fidelity check steps
+over it, and the gloss-grounding checks run over lesson-card examples rather than bank items. Any
+field that is neither printed nor gate-covered is reachable only by reading. When you add such a
+field, either render it, gate it, or record it as read-only-by-human in the register. An unexamined
+metadata field drifts silently. Cheap check to add: for every bank item, assert the gloss has no
+past-tense or negative marker unless the `target_word` is in dictionary form.
+
+---
+
+## 18. Recording a review sign-off without corrupting the evidence (added 2026-09-20, N4 kanji)
+
+When the reviewer's verdicts finally come in, the temptation is to type PASS into the status line.
+Do not. A sign-off is data, and the gate should be a *function* of it.
+
+**Derive the gate row from the per-item sheet; never write both.** The N4 execution-log row R12 is
+computed by reading the Review Items columns (`review_result`, `recheck_result`) at log-build time,
+so the log row physically cannot contradict the item verdicts. This was itself added after a
+reviewer caught the log saying NOT_EXECUTED while item results were populated. Back it with a
+self-audit assertion from the other direction: a manual PASS row is valid only if the sheet shows
+0 REVISE and 0 blank verdict. One value, two independent readings.
+
+**Flip membership in a named set, not the cells.** Keep the revised-then-passed items in a set whose
+branch already emits PASS / recheck-passed / high confidence **while retaining `flag_reason` and
+`suggested_fix`**. Moving an id between sets gets the whole verdict shape right and preserves the
+defect-to-fix-to-recheck trail for free. Keep the now-empty REVISE set rather than deleting it, so
+the next round has somewhere to land.
+
+**Close an advisory warning with a PINNED exception list, never by editing content or loosening the
+check.** The four N4 WARN-7 glosses were reviewed as accurate with no content change. The closure is
+a set of exact `"form=gloss"` strings: edit either side and the acceptance lapses and the item warns
+again; add a new ungrounded gloss and it warns as before. Also report pinned entries that have
+STOPPED firing, so the list cannot silently rot. Deleting the check or raising its threshold would
+have removed the signal for every future gloss. Comment the list with "do not add an entry here to
+silence a gloss you have not had reviewed".
+
+**Be explicit that a heuristic's WARN is not an accuracy verdict.** Check 7 warns when a gloss shares
+no WORD with a JMdict sense; an accurate paraphrase can legitimately do that. Recording "reviewed,
+accepted" is the correct resolution, and it is a different act from "fixed".
+
+**Do not rebuild artifacts a status field never reached.** Prove it rather than assume it: grep the
+built HTML for the field (0 occurrences), confirm no builder reads it, and confirm the content hash
+covers only the item banks. Then run the render-fidelity gate against the EXISTING book with the
+EDITED data: a pass there is the evidence that the artifact still matches its source. Rebuilding a
+400-page print master to change a metadata flag orphans a signed-off binary for nothing.
+
+**Say what the sign-off did NOT clear.** A sha-bound rendered-visual ledger correctly reverts to
+PENDING when the book binary changes, and clearing the language gate does not clear it, the physical
+print check, or an independent recheck. Update every stale status line in the register in the same
+pass (strike through, do not delete: the record of what was open and why is worth keeping), and
+re-run the gates to produce the evidence rather than reporting the edits you made.
 
 ---
 
