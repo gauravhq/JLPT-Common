@@ -13890,3 +13890,261 @@ entry whose gloss is a single short sense while one of its examples contains a q
 contrast-marker variant of the form, and surface it for native review. Pair with F.58/F.59 - mechanical
 scans catch kana/kanji/count; this pass catches the meaning<->example mismatch; neither substitutes for the
 other.
+
+
+## Appendix F.61 - A kanji card can be dictionary-correct and still teach nothing: attribution, orthographic convention, and the checks that catch each (added 2026-08-28)
+
+**Context.** A native-teacher pass over a finished N4 kanji book (170 cards / 633 examples / 245
+practice items) returned 11 findings AFTER the corpus already passed a JMdict POS+priority gate and a
+MeCab okurigana/temporal gate with zero findings. Every example word was a real word with a real
+reading. The defects were in the relationship between a card and its own examples, and in
+orthographic convention - neither of which a dictionary-validity check can see.
+
+**The check classes worth adding at any Nx level.**
+
+1. **READING ATTRIBUTION.** For each example on kanji X's card, does its reading actually use one of
+   the readings THAT CARD teaches (allowing rendaku / handakuon / gemination)? A word can be perfectly
+   attested and still be underivable for the learner: 支度(したく) reads 度 as タク on a card teaching
+   only ド and たび. The book already had a `special` flag ("learn it as a whole word") on 11 such
+   examples; the gate is that the flag be applied CONSISTENTLY, not that irregulars be banned.
+2. **READING COVERAGE, weighted by frequency.** Which listed readings does no example demonstrate?
+   Raw, this over-reports: 87 of the corpus's readings were unexemplified and most were legitimately
+   rare. Two cuts make it actionable: (a) is the card's PRIMARY reading exemplified (0 failures here,
+   because the design already enforced it), and (b) is an unexemplified reading a CORE word one level
+   down? 夜=よる, 家=いえ and 習う were all N5/N4 basics absent from their own cards while every example
+   was an on-reading compound.
+3. **ORTHOGRAPHIC CONVENTION.** JMdict's `uk` (usually written in kana) tag against words printed in
+   kanji. Needs human triage - 犬, 目, 会う, 味噌 carry `uk` on a minor sense and are properly written
+   in kanji - but it found a card whose 3 of 4 examples (無い/無し/無くなる) are normally kana, which
+   drills a spelling the learner will rarely meet.
+4. **GLOSS-vs-TARGET on answer keys.** Answer keys that print `word (reading) . meaning` are a
+   copy-paste hazard: two entries carried a neighbouring item's gloss (屋上 . "typhoon" from the 台風
+   item; 借りました . "debt; loan" from 借金). Both CONTRADICTED their own explanation one line below,
+   so a cheap high-signal invariant is: the gloss field must share a content word with a dictionary
+   sense of its own target word.
+5. **REGISTER CONSISTENCY WITHIN AN ITEM TYPE.** 22 of 62 orthography carriers ended plain while 40
+   ended polite. Fix WITHOUT touching the underlined target or the options by embedding the plain
+   verb in a polite frame the corpus already uses (`~のが すきです`, `~ことに しました`, `~そうです`).
+   Write the added frame in KANA ONLY so no new kanji enters a per-chapter cumulative scope pool -
+   otherwise the scope validator fails and the "fix" costs a second round.
+6. **WAKACHI-GAKI PARTICLE FLOATING.** In a spaced-for-young-readers corpus, a particle must attach to
+   the word it marks. `e wo kaku` written with the particle free of its noun mis-teaches phrase
+   boundaries. One regex over every sentence and option finds it.
+7. **SCRIPT MISMATCH IN A FIELD USED FOR EQUALITY.** 7 cards printed no bold primary reading because
+   `primary_reading` was stored in hiragana while the `on` list was katakana, so the renderer's
+   `reading == primary` test silently never matched. Any field whose ONLY job is to match another
+   field by equality needs an invariant asserting membership, not just non-emptiness. Generalises
+   F.54: a derived field can be well-formed and still never fire.
+
+**False-positive classes to pre-empt (these cost the most review time).**
+
+- **Kana-headword collision.** Looking up a kana surface in a dictionary returns every homograph:
+  おおい -> "hey!", ことり -> "clink", あく -> "a spring wind". Always look up the KANJI form, or
+  constrain by the reading, before flagging a gloss.
+- **English stemming mismatch read as a gloss error.** "sells" vs "sell", "characters" vs
+  "character", "uneasy" vs "uneasiness" are not defects. Compare stems or accept substring matches
+  in either direction.
+- **Line-filtered greps that hide the source of a value.** A card appeared to gloss the verb as
+  "debt; loan" until the filtered-out neighbouring line showed the gloss belonged to a different
+  example on the same card. Read the whole block before reporting.
+- **Positional line diffs after an insertion.** A change-guard style line diff reports every line
+  after an inserted line as CHANGED. Diff the line MULTISETS instead to see only content that truly
+  entered or left; trust ADDED/REMOVED over CHANGED.
+
+**Reporting discipline.** State the finding count against the surface actually scanned ("11 findings
+over 170 cards and 245 items in this build"), name the discarded false positives and why, and keep
+judgement calls (register, coverage-by-frequency) separate from outright errors (a wrong gloss). Of
+11 findings here, 4 were flatly wrong Japanese, 3 were convention, 3 were internal consistency and 1
+was a rendering bug - a single "11 errors" headline would have overstated all but four.
+
+
+## Appendix F.62 - Page furniture that ignores the chapter variable, and decoration that silently joins the layout flow (added 2026-08-29)
+
+**Context.** Two reader complaints on a finished Nx workbook - "the review pages are too loud" and
+"the opener hero sits low" - both turned out to be single-line CSS defects rather than taste, and
+both were invisible to every automated gate the project runs (pagination, font embedding, content
+integrity, balance). They are worth checking for by construction at any level.
+
+### 1. Themed furniture that hard-codes one theme's colour
+
+A per-chapter book carries a colour variable per chapter (accent + page tint). If any shared
+component hard-codes the FIRST chapter's accent instead of reading the variable, it looks correct
+for chapter 1 and wrong for every other chapter, and nobody notices because chapter 1 is what gets
+reviewed. Here `.mhead`, the example-box border and its label all used the world-1 green, so **12 of
+14 chapters printed green section bars on a non-green page**: four competing hue families on a single
+spread. The fix is to set a CSS custom property on the page section from the chapter's own accent
+and have every component read `var(--acc, <fallback>)`; keep the fallback so standalone previews
+still render.
+
+**Check to add:** render one page from a NON-FIRST chapter and diff its fill colours against the
+chapter's declared accent. Any component still emitting chapter 1's accent is the bug. A one-page
+colour census (collect every `fill` in the page's drawing list, group by hex) makes this a
+five-second check, and it is how the defect above was found.
+
+### 2. `position:relative` on decoration keeps it in the layout flow
+
+Ornaments positioned by explicit coordinates are absolute by intent. If a later rule re-declares
+them `position:relative` - a very common way to "make z-index work", which absolute positioning
+already permits - they stay in the flow and OCCUPY LAYOUT SPACE while their `top:` offsets move them
+somewhere else visually. The symptom is a centred block that is not centred, with no obviously
+wrong number anywhere in the CSS.
+
+Measured here: four ornaments occupied **97.5mm of a 176.6mm flex column (56%)**, leaving 2.4mm of
+free space, so `justify-content:center` had nothing to distribute and the hero sat 2.2:1 low. Note
+the second-order trap: an SVG with `width:20px` and no height resolves to the **150px default
+height**, so a 20px star was contributing 39.7mm of column. Sizing decoration by width alone is
+therefore doubly dangerous inside a flow.
+
+Note also the compensating hack that had accumulated on top: a `padding-bottom` had been added to
+drag the hero up out of the packed column. Once the real cause is fixed, that compensation
+over-corrects in the opposite direction and must be removed in the same change - and any ornament
+coordinates tuned against the broken layout must be re-tuned, because they were calibrated to the
+bug.
+
+**Check to add:** for any page template that centres content, assert in the browser that the set of
+in-flow children is exactly the set you intend. `getComputedStyle(el).position` on every child of the
+centring container, with decoration expected to report `absolute`, catches this class immediately.
+Static CSS reading cannot settle it when two rules contradict each other.
+
+### 3. A fill that separates by hue but not by value is noise, not hierarchy
+
+The "loud" page also carried tinted meta boxes at **luma 238 against a page tint of luma 239**. They
+read as an extra colour family while doing no hierarchy work whatsoever. Two lessons: (a) judge a
+tint by its VALUE distance from what it sits on, not by whether it "looks subtle"; (b) the surface a
+block sits on is the one that matters - these boxes sat on a 253 panel, so the meaningful step was
+253 vs 238, and the near-identical page tint was a red herring because the two never touch.
+
+Deriving the wash from the chapter accent (about 10% into the panel colour) gives an identical value
+step in every chapter while the hue always belongs to that chapter. Verify the mixed result in the
+PRINT engine, not just the dev browser, and confirm the computed hex - `color-mix()` silently
+falling back would leave the block unstyled.
+
+**Anti-pattern to avoid:** removing the fill entirely. That was tried here and merged the worked
+example into the numbered questions it was meant to be distinguished from. Reach for a smaller step,
+not no step.
+
+### 4. Do not read a threshold gate flipping green as a fix
+
+A balance gate that had failed for three builds went green in this pass. It was NOT fixed: the
+page's empty-band measurement was unchanged (116 -> 117 rows against a 103 limit) and only the ink
+fraction drifted 0.353 -> 0.332 across a 0.350 cut, because an unrelated padding change reflowed the
+page. Any gate combining two thresholds with AND will flip on incidental reflow. When a long-standing
+failure disappears in a change that did not target it, measure the underlying quantities before
+recording it as resolved, and say so explicitly in the register.
+
+
+## Appendix F.63 - Sweeping a book for vertical-balance defects: scoping the population, and choosing the extent you measure (added 2026-08-29)
+
+**Context.** A reader reported one page whose content group "sits 20-30px low". Sweeping all 388
+pages instead of fixing that page found the same defect class on 17 further pages across three more
+templates, and two of the three causes were the SAME recurring anti-pattern. Fixing only the reported
+page would have left the rest.
+
+### Scope the population before measuring
+
+Not every page can be asked "is the content group centred". Split templates in two:
+
+- **Display templates** - a discrete content group floating in a field (title pages, section
+  dividers, colophons, credits, openers). Centring is meaningful; measure them.
+- **Panel-filling templates** - a card or panel that spans the page by construction (lesson pages,
+  exercise pages, answer keys). Their content is SUPPOSED to reach both edges. Measuring them for
+  "balance" produces confident nonsense.
+
+Here that was 33 display pages out of 386. Reporting the other 353 as defects would have buried the
+real finding.
+
+### The extent you measure decides the answer
+
+Two natural choices, and BOTH mislead on their own:
+
+- **Box-inclusive extent** (text plus drawn rectangles) counts decoration as content. Ornaments and
+  tape are as wide as real panels, so no size filter separates them: this reported the already-fixed
+  world openers as 17mm out.
+- **Text-only extent** ignores empty structural boxes. On a panel-filling template whose writing
+  cells are empty, it sees only the top of the page and reports a huge false imbalance.
+
+Use text-only extent, restricted to display templates. That combination matches what a reader
+perceives, because on those templates every real panel contains text while decoration does not.
+Always exclude page furniture (running head, folio, author line) from the extent - it is fixed by
+design and including it flattens the very difference you are looking for.
+
+### Two causes, one of them recurring
+
+1. **Leftover compensation padding.** A `padding-bottom` added to drag a group out of a layout it no
+   longer sits in. Seen twice in one book (42mm on the world divider, 20mm on the answer-key divider)
+   and once as asymmetric container padding (4mm top / 8mm bottom) that quietly biased a
+   `space-evenly` group upward. Whenever you fix a layout cause, grep the template family for
+   padding values that existed only to compensate for it - they now push the opposite way.
+
+2. **Optical versus geometric centring.** One page measured PERFECTLY centred (group centre 114.25mm
+   against a container centre of 114.3mm) and still read low, because the group was top-light and
+   bottom-heavy: a weightless decorative icon and plain text on top, a bordered card and a filled
+   pill at the bottom. This is a real typographic phenomenon, not a bug, and the fix is a deliberate
+   optical offset. Two rules: derive the offset from a measurement (here, balancing the TEXT mass
+   needed 10.5mm) rather than nudging by eye, and COMMENT it in the CSS as an intentional optical
+   correction, or a later tidy-up will "restore symmetry" and reintroduce the complaint.
+
+**Report shape.** Give the before/after delta per template with the page count, and state explicitly
+which templates were examined and found correct, and which were excluded as out of scope and why. A
+sweep that only lists what changed cannot be distinguished from a sweep that missed things.
+
+## Appendix F.64 - A generator whose parser has drifted from its source destroys the data it claims to build (added 2026-09-29)
+
+**The shape.** A project designates a markdown KnowledgeBank as the source of truth and a script
+that parses it into JSON. Over months the markdown is edited by hand and its conventions evolve;
+the JSON is edited by hand too, through review cycles. Nobody runs the generator, because
+everything already works. The generator's parser silently stops matching the markdown. It now
+returns EMPTY records for every entry - not an error, empty - and because a merge step writes
+whatever keys it is handed, one run overwrites every field it owns with nothing.
+
+On N4 this emptied on/kun/meanings across all 170 kanji, emptied the primary reading of 167 of 252
+entries, cut a 249-glyph whitelist to 170, and took the content-integrity checker from 27
+violations to 160. The markdown had moved from `- On:` / `- Kun:` / `- Meaning:` (capitalised,
+ASCII-comma) to `- on:` / `- kun:` / `- meanings:` (ideographic comma, katakana on-yomi preserved,
+okurigana preserved, `(none)` for empty, an explicit `- primary: R  (kind: on|kun)` line, and
+`secondary_on:` / `secondary_kun:` sub-bullets). Not one of those matched.
+
+**Rules, in the order they matter.**
+
+1. **Never run a regenerator against live data to find out what it does.** Copy the source tree and
+   the outputs into a scratch directory, run it there, and diff every output against the real file
+   before it is allowed anywhere near the repo. The diff is the specification of what the tool
+   currently believes.
+2. **An empty parse is a failure, not a result.** If a parser produces a record with no readings,
+   no meanings and no primary, raise. The single line `if all-fields-empty: raise` is the whole
+   difference between a loud failure and a silent wipe. Assert on the aggregate too: parsing N
+   entries and finding N of them empty is a dialect change, not a data problem.
+3. **A generator must never delete.** An entity present in the output with no entry in the source
+   is an ERROR to surface, not a row to drop. Dropping it takes every hand-authored field with it -
+   examples, notes, review status, stroke data - none of which the generator could regenerate.
+4. **Scope the generator to what it can actually own.** The N4 script wrote five files; it had a
+   merge-preserving path for one of them. The other four were naive overwrites that discarded
+   hand-authored fields, refilled a deliberately-empty file, and rebuilt a UNION whitelist from a
+   catalogue that holds only half the union. Quarantine the paths a tool cannot do safely, and
+   record the measurement that condemned each one in the file, next to the dead code.
+5. **Check which side is actually stale before choosing a direction.** The instinct is source ->
+   derived, because that is what the header says. Here 21 of 143 markdown entries were BEHIND the
+   JSON, which had been corrected through review and corroborated against KANJIDIC2. Regenerating
+   would have reverted verified content. The reconciliation ran derived -> source once, then the
+   normal direction became a no-op.
+6. **The no-op is the proof.** After reconciling, `build --report` must print zero changes and
+   re-running the sync must report zero edits. Two tools that are each idempotent against the
+   other is what "this file is the source of truth" actually means. Assert it in CI: a glyph-set
+   equality check (does the source list the same entities?) says nothing about whether any ENTRY
+   is in step, and the entry contents are where this drifts.
+7. **Run the release-blocking checker, not just the domain verifier.** The domain verifier
+   (readings exist in KANJIDIC2, stroke counts match) passed throughout. The cross-file invariants
+   are what caught both the original wipe and, later, a subtle regression the rewrite introduced.
+8. **Two files can use the same field name for different questions.** A catalogue's `primary`
+   reading is the headline reading in catalogue form (katakana on-yomi, okurigana attached); a
+   furigana file's `primary` is what you would write as ruby over the bare glyph (kana, bare).
+   They coincided for 167 of 170 entries, which is exactly enough agreement to make mirroring one
+   onto the other look correct. An override table that looks like legacy cruft may be the only
+   thing encoding the distinction: find out what fails when you remove it before removing it.
+9. **Mutation-test a new invariant.** A guard that has only ever passed proves nothing. Inject each
+   regression it claims to catch, confirm each fails, and restore from bytes held in memory with a
+   sha256 equality check. Assert the mutation actually applied - a string anchor that silently
+   misses makes the test report a pass it never earned.
+10. **Line-based change guards mislead on structured files.** Inserting a nested object shifts
+    every following line; a text-mode guard then reports thousands of CHANGED rows and buries the
+    real edit. Reconstruct the pre-edit file from the snapshot and diff it key by key.
