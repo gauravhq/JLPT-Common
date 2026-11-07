@@ -14202,3 +14202,49 @@ The classes below are the ones a gate did not, and mostly could not, catch.
 **Report shape.** List findings with the page each appears on, then for the fix batch confirm in
 the RENDERED output that each new text is present and each old text is gone, and that the old text
 was present in the previous build - otherwise the check proves nothing.
+
+## Appendix F.66 - A second read by independent reviewers: labels, carriers, worked examples and recorded decisions (added 2026-11-07)
+
+**Context.** The same N4 book, rebuilt after F.65, was read again by four independent reviewers,
+one per surface (kanji cards, practice banks, fixed text and answer keys, supplement), none of whom
+saw the first read. They found about 150 more defects. Every finding was checked against the data
+and the gates before it was applied; two were withdrawn.
+
+1. **Split the read by surface and do not share the first reader's conclusions.** The first read
+   sampled; the second gave each reviewer one surface to read in full. Most new findings sat in
+   surfaces the first read had skimmed: answer-key labels, worked examples, template carriers.
+
+2. **Answer-key labels teach phonetics, so check them as content (accuracy-prompt A95).** Seven
+   labels called a change "voicing" that is not one (り->じ, む->ぶ, に->じ, か->げ, し->ち); three
+   on/kun tags were wrong (や of 屋 called on, え of 会 called kun, く of 来 called on). "Voices X->Y"
+   needs Y = X + dakuten / handakuten. Mechanical part: `N5/tools/check_label_phonetics_and_carriers.py`.
+
+3. **An empty-carrier class is bigger than its examples (A96).** F.65 item 2 fixed 34 carriers of
+   one frame; the second read found 135 more across related frames (「Xの ことを 考えました」,
+   「Xに ついて 聞きました」, 「Xか どうか しらべました」). Before fixing, write the regex for the
+   whole family and count; rewrite every hit around one concrete situation.
+
+4. **Worked examples sit outside every item gate (A97).** 11 of 15 (れい) examples for 漢字読み
+   underlined a kana word, and a 12th used the 表記 format. They were written in kana because the
+   validator scopes each world's kanji; the fix is an in-scope (N5) kanji word, not kana. Run the
+   item-format rules on examples. Also list each test's targets: two tests asked the same reading
+   twice on one page.
+
+5. **A reviewer's structural flag can reverse a recorded decision (FP-25).** One item "misfiled"
+   as 漢字読み had been moved there on purpose in a native review, and a "non-Jōyō" reading was
+   needed by a data gate (貸家 かしや needs 貸 かし). Both changes were applied, failed a gate, and
+   were withdrawn. Search the authoring guide and review ledger before a structural fix, and treat
+   a gate failure after a reviewer-driven change as a possible reversal, not a gate bug.
+
+6. **A supplement that copies another file's content goes stale with it.** The supplement printed
+   the banks' worked examples, so a bank fix left the supplement showing the old example until it
+   was rebuilt. Rebuild every artifact that reads a changed file, then search the final merged
+   output for the old text.
+
+7. **Readings outside the card still need to be on it.** An example word (支度 したく) used a
+   reading the card stores as secondary and does not print (タク). Check every example's reading
+   against the printed readings, not the stored ones.
+
+8. **Edited items return to review, including label-only edits.** 35 bank items now show REVISE /
+   recheck PENDING (210 of 245 PASS); the reason column says which are label or spelling only, so a
+   reviewer can clear those quickly.
