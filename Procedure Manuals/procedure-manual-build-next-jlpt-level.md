@@ -14162,7 +14162,7 @@ The classes below are the ones a gate did not, and mostly could not, catch.
    on its own, so per-option checks and per-item review both pass. Substitute each option into the
    frame and read the sentence. Fix by moving the blank so it modifies a noun, or by printing the
    options in the form the frame needs (親切な); never by changing only the key. Mechanical part:
-   `N5/tools/check_blank_frame_pos.py` (blank + でした/です, blank + noun), bounded to options the
+   `N5/tools/check_blank_frame_pos.py` (blank + でした/だ/では, blank + noun), bounded to options the
    vocab file types.
 
 2. **Template carriers fail as a class, so fix them as a class.** A carrier frame of "verb +
