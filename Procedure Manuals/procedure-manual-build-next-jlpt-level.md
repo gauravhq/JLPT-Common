@@ -14284,3 +14284,27 @@ F.66's fixes. About 110 findings; each was checked against the data before it wa
 
 7. **Edited items return to review.** 69 of 245 bank items now show REVISE / recheck PENDING
    (176 PASS; 30 of the 69 are label or spelling edits only).
+
+## Appendix F.68 - Fourth read: answers leaked by worked examples and distractors (added 2026-11-07)
+
+**Context.** A fourth independent read after F.67, plus a string-search sweep.
+
+1. **Every printed string can leak an answer.** Worked examples printed しつもん, ぎんこう and ようふく,
+   the answers of numbered items in the same test; a reading distractor (はつおと) printed another
+   item's answer (おと); an option (問題) spelled a 表記 answer; a fresh replacement item's options
+   (姉, 妹) spelled the 表記 answer 姉妹. Collect every printed string of a test, then search it for
+   each answer. Four leaks were found by the script, not by the four reviewers.
+
+2. **Re-run the leak sweep on your own replacements.** Two of this round's leaks were introduced by
+   the previous round's fixes. A fix batch is not checked until the sweep runs on the patched data.
+
+3. **"No object" is not a misuse.** 用法 worked-example distractors such as 「あさ はやく うります」
+   are grammatical (the object is omitted). Use a wrong object or an impossible subject.
+
+4. **Keep glosses aligned across artifacts.** The card's 元気 gloss changed; the supplement's own
+   copy of it did not, until the read-back searched the merged PDF for the old wording.
+
+5. **Scripts must not write `.bak` copies when the user's settings deny `*.bak*`.** The automation
+   classifier blocked two runs; snapshots plus git cover the same need.
+
+Review state after this round: 85 of 245 bank items REVISE / recheck PENDING (160 PASS).
