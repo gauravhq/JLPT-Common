@@ -14248,3 +14248,39 @@ and the gates before it was applied; two were withdrawn.
 8. **Edited items return to review, including label-only edits.** 35 bank items now show REVISE /
    recheck PENDING (210 of 245 PASS); the reason column says which are label or spelling only, so a
    reviewer can clear those quickly.
+
+## Appendix F.67 - Third read: twins across sections, stale labels, and rare readings as distractors (added 2026-11-07)
+
+**Context.** A third independent read of the same N4 book (four reviewers, one per surface) after
+F.66's fixes. About 110 findings; each was checked against the data before it was applied.
+
+1. **Check "one word per test" across sections, not within a type (accuracy-prompt A98).** 24 pairs
+   tested the same word twice in one test. In the worst shape, a 表記 item printed the kana
+   (つよい) that a later 漢字読み item asked for (強くて). Key each item by the kanji string of its
+   tested word and compare across all sections. Replace the item that gets answered; keep items a
+   recorded decision protects.
+
+2. **Replacement items carry the slot's constraints.** Each new item kept its slot's answer position
+   (the 4/4/4/3 balance), took an opener unused in its section, kept every world kanji at 1-2 tests,
+   and used only kanji taught so far or N5. Writing the constraint list first made 24 replacements
+   pass the validator at the first run.
+
+3. **New distractors can be real readings.** Four freshly written distractors (じでんしゃ, やちゅう,
+   ずしょかん, ぶく) are rarer readings that JMdict lists. The distractor-reading gate caught them;
+   run it after writing distractors, before any review.
+
+4. **Changing options orphans their labels.** One earlier fix replaced an item's options but left
+   per-option labels that described the old ones. Re-read every label of an item whose options
+   change.
+
+5. **Do not overrule your own checker.** A pass kept 「Xに ついて 話しました」 frames as natural
+   enough; the new checker flagged 11 of them, and the next reader flagged them all (46 more
+   rewritten). Once a frame is in a checker, fix every hit. Extend the regex when a reader finds a
+   sibling frame (「Xに ついての 本を 読みました」, 「Xの ことが この 本に 出て きます」).
+
+6. **A data-only fix can leave a printed copy behind.** The card example 走りだす became 走り出す;
+   the supplement's answer for the same word still printed 走りだす until the final read-back
+   searched the merged PDF for the old form.
+
+7. **Edited items return to review.** 69 of 245 bank items now show REVISE / recheck PENDING
+   (176 PASS; 30 of the 69 are label or spelling edits only).
