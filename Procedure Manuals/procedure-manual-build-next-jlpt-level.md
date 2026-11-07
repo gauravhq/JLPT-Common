@@ -14308,3 +14308,35 @@ F.66's fixes. About 110 findings; each was checked against the data before it wa
    classifier blocked two runs; snapshots plus git cover the same need.
 
 Review state after this round: 85 of 245 bank items REVISE / recheck PENDING (160 PASS).
+
+## Appendix F.69 - Fifth read: labels that hide a real reading (added 2026-11-08)
+
+**Context.** A fifth independent read after F.68, plus a dictionary sweep of every answer-key label.
+
+1. **Test the distractor, not the label wording.** The F.66 rule fixed labels that said "wrong
+   reading"; it did not catch labels whose wording sounded fine: "voices た->だ" on 台風 だいふう
+   (だい is the everyday on of 台, as in 一台), "unvoices ぶ->ふ" on 分野 (ふん, as in 五分), "adds い"
+   on 世界 (せい, as in 世紀). Split each kanji-reading distractor into readings of its own kanji
+   (KANJIDIC2 on + kun). If a full split exists, the label must name that reading and say it is wrong
+   here ("on だい (as in 一台), wrong here"). The reviewer found 21; the split sweep found 8 more of
+   the same kind. Rendaku counts: こと / くち / ひ are the plain kun of 事 / 口 / 日, so 仕事 しこと
+   gets "kun こと; 仕事 voices it to ごと", not "unvoices".
+
+2. **Rare readings keep their error-type label.** The sweep also matches readings a learner never
+   meets (分 ぶ, 通 つ, 度 と, 験 げん). Relabel the common ones; record the rare ones as reviewed.
+
+3. **Boundary words need exact glosses.** 以上 / 以下 include the number: "X or more / X or less",
+   never "more than / less than". This is a known N4 trap, and an answer-key gloss teaches it.
+
+4. **Small naturalness classes reviewers keep finding:** とても + a plain negative (learner error;
+   drop とても or use あまり); つぎの for the room next door (となりの); a carrier that states a truism
+   (an English book has no kanji) or reports a bare opinion with no situation; a near-fact stated as
+   exact (equinox day and night are only about equal); a 不服 / 反対 type word with nothing to object to.
+
+5. **A card's printed meaning must cover the sense its examples teach.** 代 lacked "fee" beside 代金,
+   英 lacked "outstanding" beside 英雄, 曜 said "weekday" beside 日曜日 (Sunday), 主 led with "lord".
+
+6. **A QA pin on exact option text must move with the fix.** Dropping とても from 問369 changed its
+   keyed text, so the R-RATIONALE entry was updated in the same change.
+
+Review state after this round: 105 of 245 bank items REVISE / recheck PENDING (140 PASS).
