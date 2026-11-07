@@ -14148,3 +14148,57 @@ okurigana preserved, `(none)` for empty, an explicit `- primary: R  (kind: on|ku
 10. **Line-based change guards mislead on structured files.** Inserting a nested object shifts
     every following line; a text-mode guard then reports thousands of CHANGED rows and buries the
     real edit. Reconstruct the pre-edit file from the snapshot and diff it key by key.
+
+## Appendix F.65 - A manual language read after every gate passes: frames, twins, wraps and stale gates (added 2026-11-07)
+
+**Context.** A manual Japanese-language read of a finished N4 kanji book (170 cards, 15 practice
+banks, a 405-item supplement), done after every automated gate and several review rounds had
+passed. It found 12 issues; one was withdrawn because it reversed an earlier reviewed decision.
+The classes below are the ones a gate did not, and mostly could not, catch.
+
+1. **A blank must be grammatical for every option, not just the key (accuracy-prompt A94).**
+   「えんそくは とても（　　）でした」 with four い-adjective options yields 「楽しいでした」 for every
+   one; 「とても（　　）人です」 keyed to the な-adjective 親切 yields 「親切人」. Each option reads fine
+   on its own, so per-option checks and per-item review both pass. Substitute each option into the
+   frame and read the sentence. Fix by moving the blank so it modifies a noun, or by printing the
+   options in the form the frame needs (親切な); never by changing only the key. Mechanical part:
+   `N5/tools/check_blank_frame_pos.py` (blank + でした/です, blank + noun), bounded to options the
+   vocab file types.
+
+2. **Template carriers fail as a class, so fix them as a class.** A carrier frame of "verb +
+   ことについて / ときのこと" (「クラスで 問う ことに ついて 聞きました」) is grammatical but says
+   nothing. An earlier pass rewrote the 10 cited items; the same read found 34 more of the same
+   frame. When one templated sentence is judged empty, grep the frame, not the citation.
+
+3. **A fixed sentence has twins.** Readings (問題1) and writing (問題2) reused the same carrier for
+   the same word, and the earlier rewrite reached only the 問題1 copy (問55 fixed, 問225 missed;
+   問170 fixed, 問192 missed). When a carrier changes, search every section for the same sentence.
+
+4. **A reading list rendered as plain text breaks inside readings.** Kun lists joined with 「、」
+   wrapped mid-reading on 13 cards (「か / よ(う)」, 「あき / (らか)」). Render each reading as a
+   no-break unit so lines break only after 「、」. A change that shortens one list can move the
+   break, so check the whole set, not the card you edited.
+
+5. **Check prior decisions before "fixing" a reviewed wording.** 去年 paraphrased as 「前の 年に」
+   looked like it needed 「一年前に」; a superseded-strings guard (html_qa TC-CH02) failed, because
+   an earlier round had replaced exactly that wording - 去年 is not strictly "one year ago". The
+   guard is why the reversal never shipped. Keep such lists, and read them before editing.
+
+6. **A deliberate content decision can leave a gate stale.** A text-cleanliness check asserted
+   ASCII "Joyo" and no macrons; the book had been changed on purpose to "Jōyō", and the gate failed
+   on correct text from then on. When content changes by decision, update the gate that encoded
+   the old decision in the same change. Keep the gate's purpose: here, a macron is legitimate
+   inside the intact word and corruption anywhere else (verified by planting 「Joōyoō」).
+
+7. **Editing a reviewed item returns it to review.** The five reviewer-passed bank items edited
+   here went back to REVISE / recheck PENDING (240 of 245 PASS). An editor does not re-pass their
+   own edit.
+
+8. **Retention by move is not retention if a pruner reads mtime.** Moving a superseded file into
+   `old/` keeps its original timestamp; a scheduled cleanup that deletes `old/` files older than
+   30 days by mtime removed a September file within hours of the move. Reset the timestamp when
+   moving into a retention folder, or the retention window is already over.
+
+**Report shape.** List findings with the page each appears on, then for the fix batch confirm in
+the RENDERED output that each new text is present and each old text is gone, and that the old text
+was present in the previous build - otherwise the check proves nothing.
