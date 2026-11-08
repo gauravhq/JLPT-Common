@@ -14423,3 +14423,44 @@ F.40 (first CI recovery).
 7. **Linux baselines need a Linux render.** Without Docker or WSL locally, refresh -linux.png files
    with the workflow's `update_snapshots` dispatch input on the pinned image, then commit the
    artifact's PNGs. Plan for that round trip when a release changes layout.
+
+## Appendix F.72 - A house-style character removed site-wide: one rule module, used three ways (added 2026-11-08)
+
+**Context.** The owner ruled that the <L> site shows no em dashes. The UI chrome was cleaned
+first (N5 v1.17.48); the content (data JSON, about 1,650 static mirror pages, Anki exports,
+rendered changelog / notices) held 15,156 more. N5 closed it in v1.17.52.
+
+1. **Write the rule once, as a module, and use it three ways:** a one-off `--apply` over the
+   committed files, a `--check` that CI runs (N5: JA-180), and an output filter inside every
+   builder that writes pages. Hand-editing builder templates to match would copy 80+ context
+   decisions by hand and drift on the next rebuild.
+
+2. **Decide by context, not by global replace.** Turning every spaced em dash into ", " reads
+   badly for the most common use in a study site, the term-dash-gloss line (あつい [dash] hot,
+   now あつい: hot). N5 rules: term-gloss to a colon,
+   a dash pair around an aside to commas, a clause-starting next word ("but", "which", "not what")
+   to a comma, a sentence that already has a colon to a comma, a site-name title suffix to " | ",
+   a dash with nothing on one side removed, a lone placeholder to "-". After a Japanese term,
+   words like "not", "which", "who" start a gloss, not a clause.
+
+3. **Dry-run with random samples per rule before writing.** Each sample round in N5 exposed a
+   class: glosses mistaken for conjunctions, titles losing their separator after 。, double
+   colons, a builder that splits titles on the em dash. Exclude code from the content pass.
+
+4. **The same text lives in JSON and HTML; the rules must agree across both.** HTML entities
+   (`&#x27;` ends in ";") and literal "<" in JSON strings changed two decisions until the
+   module masked entities and bounded its lookback by mode. Proof: rebuild a page body from data
+   through the filter and diff it against the committed page; N5 reached 0 differences on all
+   178 grammar pages.
+
+5. **Length and shape invariants catch the side effects.** Shorter punctuation pushed one essay
+   to 499 characters (floor 500) and turned a "path [dash] note" entry into "path: note", which
+   a path checker then read as a missing file. Run the full integrity suite after a punctuation
+   sweep, not only the new check.
+
+6. **Touch only U+2014.** The katakana long-vowel mark (ー) and the horizontal bar (―) look
+   alike and are content. Japanese two-speaker lines joined by a dash get 「A」「B」, not a
+   comma.
+
+7. **Mutation-test the new guard:** inject one dash into a data file and one mirror page,
+   expect two hits, restore by hash.
