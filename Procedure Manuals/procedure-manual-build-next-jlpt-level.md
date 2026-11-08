@@ -14340,3 +14340,31 @@ Review state after this round: 85 of 245 bank items REVISE / recheck PENDING (16
    keyed text, so the R-RATIONALE entry was updated in the same change.
 
 Review state after this round: 105 of 245 bank items REVISE / recheck PENDING (140 PASS).
+
+## Appendix F.70 - One-round language review (added 2026-11-08)
+
+**Context.** Five language reads of the N4 book each found new issues, because each reviewer used
+its own criteria, read a different slice, and the fixes targeted cases instead of classes. The
+review workbook now makes one round sufficient. Engine: `N4/Workbook/N4_Kanji_Workbook/language_checks.py`
+(local, with the workbook builder).
+
+1. **Coverage first.** Build one row per Japanese item from the sources (cards, practice items,
+   worked examples, extended set), place each on its PDF pages, then remove every item's strings
+   from each PDF text block. Any block with Japanese left over becomes a Fixed-text row (deduped,
+   digits normalised). Reconcile: blocks in the PDF = blocks covered by item rows + blocks covered by
+   Fixed-text rows; not covered = 0. Items in the source that the PDF never prints get no row and are
+   listed (12 unprinted 用法 worked examples were found this way, after earlier rounds had edited them).
+
+2. **Fixed checks, decided before reviewing, the same for every row.** C1 reading, C2 grammar,
+   C3 natural, C4 one answer, C5 key and gloss, C6 N4 level; checks that do not apply to a part are
+   pre-filled n/a. Only C1-C6 failures block; style suggestions go to a separate list.
+
+3. **One script check per issue type found so far** (AC01-AC19), run on every row at every build.
+   A hit is shown on its row; a reviewer judges it under the matching C-check. A hit judged correct is
+   recorded with its reason in an ACCEPTED table, so the class stays closed without re-flagging.
+   Issue types no script can decide (naturalness, two answers, gloss coverage) are listed against
+   the C-check that covers them.
+
+4. **Place items by their own sentence, not by short options.** Two-kana options and shared example
+   words appear on many pages; using them as page keys attached items to the wrong pages and hid
+   uncovered text. Use the stem (or sentence-length options for 用法) plus the answer-key header.
