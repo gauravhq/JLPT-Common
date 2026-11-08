@@ -14489,3 +14489,38 @@ rendered changelog / notices) held 15,156 more. N5 closed it in v1.17.52.
 
 7. **Mutation-test the new guard:** inject one dash into a data file and one mirror page,
    expect two hits, restore by hash.
+
+## Appendix F.73 - Checklist coverage of the release artifact, not only the language inventory (added 2026-11-09)
+
+**Context.** An external review of the N4 review workbook found the language inventory (F.70) strong
+but the detailed test registry still aimed at the original 245-item, 388-page HTML build while the
+publication file is a 509-page merged PDF with a 405-item extended set. Inventory coverage is not
+publication-test coverage.
+
+1. **Bind every layer to the release artifact.** Checklist, test registry, run configuration,
+   coverage matrix and file manifest must name the same final file (checksum) and its page-order
+   manifest, and every count must say whether it is a component count or a final-book count. Add a
+   release_scope per registry case (component, extended set, or final merged PDF).
+2. **Add the case families an inventory does not cover:** final-PDF scope, extended-set
+   applicability by item type, complete question-to-answer mapping, merge boundaries and build
+   identity; worked examples and answer leakage per assessment unit; writing pages and every
+   stroke-strip frame; English text, promises, cross-references, covers, rights and reader-facing
+   claims; production profile, gutter, image reproduction, physical proof, cover files and PDF
+   portability; occurrence-level coverage, waiver control and release closure (N4: 30 cases,
+   TC-FIN / WEX / WRT / ENG / PRD / GOV, added as cases to execute, not as results).
+3. **A method must be able to prove its pass criterion.** A case that promises whole-book equality
+   cannot be closed by a sampled method; either cover every field or narrow the claim.
+4. **Map tests by relevance, not by presence.** A coverage-matrix row that points at a font test for
+   an underline, or at furigana for a heading, is not coverage. Audit that every mapped ID exists.
+5. **Route each case to the right reviewer.** A keyword classifier that matched "print" inside
+   "as printed" sent three grammar cases to the visual reviewer; match whole words, and give
+   governance cases (coverage, traceability, completion) their own mode with their own evidence.
+6. **Scope rules that could contradict.** State which rule judges what: naturalness applies to stems,
+   keys, worked examples and every option's frame; the controlled-misuse rule judges only the
+   misused word in a wrong usage option.
+7. **Language completion is not publication approval, and rendered is not inspected.** Keep the C1-C6
+   Result a language result; record "rendered successfully" (automated) separately from "visually
+   inspected" (a person, every page, every occurrence).
+8. **Test the auditor.** The workbook self-audit's registry checks indexed one column to the right
+   and had never tested modes or script names; fixing it surfaced a registry row that named a
+   non-embedded tool. Seed one known-bad row when adding a structural check.
