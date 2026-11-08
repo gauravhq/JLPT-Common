@@ -14376,3 +14376,44 @@ review workbook now makes one round sufficient. Engine: `N4/Workbook/N4_Kanji_Wo
    false placement above), 5 fixed. Round 2 rechecked only the 5 changed rows: 0 failures. Verdicts
    are stored per row with a hash of the row's text, so an edit sends that row back to 'to do' and
    nothing else needs re-reading.
+
+## Appendix F.71 - CI recovery round 2: runner drift, a red-by-default suite, and what it hid (added 2026-11-08)
+
+**Context.** The <L> Playwright smoke job had been red on every push for months (N5: from at least
+2026-06-03), so new failures looked like old ones. On 2026-11-08 the `ubuntu-latest` label moved to
+Ubuntu 26.04 and Playwright 1.59 could not install Chromium there; the job died in 19 s. Extends
+F.40 (first CI recovery).
+
+1. **Pin the runner image for any job with browser binaries or pixel baselines.** Use
+   `runs-on: ubuntu-24.04`, not `ubuntu-latest`. A label move breaks the dependency install and
+   silently changes fonts and anti-aliasing under the -linux.png baselines. Move the pin on purpose,
+   in one change with the Playwright bump and a baseline refresh.
+
+2. **A red-by-default suite hides real bugs.** Behind the known failures sat two product bugs:
+   - app.js registered `./sw.js`; on a static mirror (`/learn/<id>/`, no `<base href>`) that is
+     `/learn/<id>/sw.js`, a 404, so offline support never installed from mirror entry points.
+     Any URL built in code that mirrors also load goes through the base-aware helper (`assetUrl()`).
+   - the "Report a problem" link took the item id from `location.hash` after the router had moved
+     to history-mode paths, so every report said "(home)". When routing changes shape, grep every
+     reader of `location.hash` / `location.pathname`.
+
+3. **Stale tests: re-assert the design, never skip.** A test asserted a section removed on purpose;
+   assert its ABSENCE instead. A test guessed `/manifest.json`; read the page's own
+   `<link rel="manifest">`. A selector put a regex inside a CSS string (`:has-text(/x/i)`), which
+   throws; use `locator.filter({ hasText: /x/i })`.
+
+4. **A coverage gate is only useful if it stays green.** Two modules shipped without a spec and
+   tripped the "no new untested module" gate for five months. Add the spec in the same change as
+   the module.
+
+5. **Mask release-varying text in visual baselines.** The footer version string was in every
+   snapshot, so each release broke every baseline and the failures became noise. Mask it (and any
+   date / streak / counter) on every route.
+
+6. **CI artifact paths are repo-root-relative.** `defaults.run.working-directory` applies to `run:`
+   steps only; `actions/upload-artifact` paths need the subfolder prefix, or failed runs upload
+   nothing and the visual diffs cannot be inspected.
+
+7. **Linux baselines need a Linux render.** Without Docker or WSL locally, refresh -linux.png files
+   with the workflow's `update_snapshots` dispatch input on the pinned image, then commit the
+   artifact's PNGs. Plan for that round trip when a release changes layout.
