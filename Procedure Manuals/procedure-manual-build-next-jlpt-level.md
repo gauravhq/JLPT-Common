@@ -14368,3 +14368,11 @@ review workbook now makes one round sufficient. Engine: `N4/Workbook/N4_Kanji_Wo
 4. **Place items by their own sentence, not by short options.** Two-kana options and shared example
    words appear on many pages; using them as page keys attached items to the wrong pages and hid
    uncovered text. Use the stem (or sentence-length options for 用法) plus the answer-key header.
+   For 用法, require ALL option sentences on the page: one option of an unprinted worked example
+   was another item's stem, which placed the example on a page it is not on.
+
+5. **Run it as rounds over a frozen list, not as open reads.** Round 1 applied C1-C6 to all 947 rows
+   (8 parallel reviewers, one fixed rules file); 6 failures, 1 rejected after verification (the
+   false placement above), 5 fixed. Round 2 rechecked only the 5 changed rows: 0 failures. Verdicts
+   are stored per row with a hash of the row's text, so an edit sends that row back to 'to do' and
+   nothing else needs re-reading.
