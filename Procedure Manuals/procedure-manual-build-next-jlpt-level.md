@@ -14391,6 +14391,15 @@ review workbook now makes one round sufficient. Engine: `N4/Workbook/N4_Kanji_Wo
    real reading of the kanji (ぶか: 不 reads ブ) before any reviewer saw it. Each style note also
    shows, with its status, on its own Checklist row, so a reader of one row sees every decision on it.
 
+8. **Close the queue in the same pass.** Items edited after their last review wait as REVISE /
+   recheck PENDING. Recheck them with fresh reviewers in one round (here 123 items plus 2 new worked
+   examples, 4 reviewers, 0 failures), store each verdict with a hash of the item's printed fields so
+   a later edit reopens it, and name the reviewer type (AI or native) on the item and in the
+   execution log. Decide every style note the round raises (applied, or not applied with the reason)
+   instead of leaving it open; two later rechecks of the 14 rows edited this way found 0 failures.
+   Render the PDF the checklist reads with the same browser every time: an Edge render split the
+   (れい) lines into blocks the checklist could not place.
+
 ## Appendix F.71 - CI recovery round 2: runner drift, a red-by-default suite, and what it hid (added 2026-11-08)
 
 **Context.** The <L> Playwright smoke job had been red on every push for months (N5: from at least
