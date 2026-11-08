@@ -14383,6 +14383,14 @@ review workbook now makes one round sufficient. Engine: `N4/Workbook/N4_Kanji_Wo
    not raise it again, and gate each replacement word with the same checks as the original (kanji
    scope, answer leak, real-word, duplicate word); three of this round's replacements failed them.
 
+7. **A 'should be' label must make the whole sentence correct.** Applying 40 later style notes
+   (round 7) reopened 39 rows; the recheck found 1 failure: a 用法 label was shortened to the verb
+   fix (おぼえて います) and no longer named the particle fix, so the corrected sentence
+   (ことが よく おぼえて います) was still wrong. When a label is reworded, read the option with the
+   label's text substituted in. The script checks also caught one replacement distractor that is a
+   real reading of the kanji (ぶか: 不 reads ブ) before any reviewer saw it. Each style note also
+   shows, with its status, on its own Checklist row, so a reader of one row sees every decision on it.
+
 ## Appendix F.71 - CI recovery round 2: runner drift, a red-by-default suite, and what it hid (added 2026-11-08)
 
 **Context.** The <L> Playwright smoke job had been red on every push for months (N5: from at least
