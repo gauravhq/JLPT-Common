@@ -14377,6 +14377,12 @@ review workbook now makes one round sufficient. Engine: `N4/Workbook/N4_Kanji_Wo
    are stored per row with a hash of the row's text, so an edit sends that row back to 'to do' and
    nothing else needs re-reading.
 
+6. **Style notes are a list, not a loop.** Applying 119 of 130 style notes reopened 123 rows; the
+   rechecks found 3, then 1, then 0 failures (rounds 3-6), each on rows the previous fix had edited.
+   Record every note with a status (applied, or not applied with the reason) so a later reviewer does
+   not raise it again, and gate each replacement word with the same checks as the original (kanji
+   scope, answer leak, real-word, duplicate word); three of this round's replacements failed them.
+
 ## Appendix F.71 - CI recovery round 2: runner drift, a red-by-default suite, and what it hid (added 2026-11-08)
 
 **Context.** The <L> Playwright smoke job had been red on every push for months (N5: from at least
