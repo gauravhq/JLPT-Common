@@ -14400,6 +14400,14 @@ review workbook now makes one round sufficient. Engine: `N4/Workbook/N4_Kanji_Wo
    Render the PDF the checklist reads with the same browser every time: an Edge render split the
    (れい) lines into blocks the checklist could not place.
 
+9. **Classify against the rule, not the reviewer's label.** In a later full round (947 rows, 8 fresh
+   reviewers) the reviewers reported 0 failures but filed four card meanings that leave out a sense
+   their own examples need (度 支度, 公 主人公, 色 景色 / 特色, 口 入り口) as style; under C5 these
+   block, so they were fixed as failures. Say it in the rules text. A fix can open the same class:
+   adding 人口 as an on-reading example for 口 needed a 'people' sense the card does not teach, and
+   the recheck failed it; the example was removed. Rebuild the PDF before computing stale rows: the
+   checklist reads printed text, so data edited but not yet printed shows up as unplaced text.
+
 ## Appendix F.71 - CI recovery round 2: runner drift, a red-by-default suite, and what it hid (added 2026-11-08)
 
 **Context.** The <L> Playwright smoke job had been red on every push for months (N5: from at least
