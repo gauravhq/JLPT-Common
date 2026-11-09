@@ -14524,3 +14524,17 @@ publication-test coverage.
 8. **Test the auditor.** The workbook self-audit's registry checks indexed one column to the right
    and had never tested modes or script names; fixing it surfaced a registry row that named a
    non-embedded tool. Seed one known-bad row when adding a structural check.
+9. **Run the release cases as one bound run.** One runner executes the scriptable parts against the
+   release file and merges recorded reviewer / visual / owner parts; each case's result is its worst
+   part, and the run is stored with the release checksum so a rebuild voids it (the self-audit fails
+   a result that names another file). In the N4 run, 5 of the first 8 FAILs were checker errors
+   (a 3-page window for a long answer key, a regex that dropped the last writing cell, a stale cache
+   path, an unprinted field counted as missing, a source-string count used instead of the printed
+   underline). Verify every FAIL before reporting it.
+10. **What the release cases found that the language rounds did not:** answers leaked by a section
+   heading (a reading item for 問題 under もんだい1) and by another item's sentence in the same unit;
+   usage distractors outside the transitivity subsection that are wrong by particle or need two
+   changes; subsection labels that do not match their items; reader-facing promises and credits
+   claims that the merged edition no longer supports; empty PDF title / author metadata. Production
+   cases (profile, gutter, image PPI, proof, cover files, previewer) stay BLOCKED until the owner
+   records the production profile.
