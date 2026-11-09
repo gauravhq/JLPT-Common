@@ -14538,3 +14538,21 @@ publication-test coverage.
    claims that the merged edition no longer supports; empty PDF title / author metadata. Production
    cases (profile, gutter, image PPI, proof, cover files, previewer) stay BLOCKED until the owner
    records the production profile.
+11. **Fixing the release-case failures.** In the N4 fix pass (13 PASS / 9 FAIL / 7 BLOCKED /
+   1 PENDING before, 19 PASS / 2 FAIL / 8 BLOCKED / 1 PENDING after), every judgment was made by an AI in the expert-reviewer
+   role the owner assigned, and that role is written into each executor field and approval record.
+   A case that needs only a missing input from the owner (art provenance, production profile) is
+   BLOCKED, not FAIL. Split such a case into parts so the fixed part shows PASS and only the
+   owner's part stays open.
+12. **Every non-applied decision needs one status prefix.** The governance check finds waivers by
+   the prefix "not applied". A note marked "kept" slipped past it. Use one prefix, and give every
+   waiver an approver, a scope and a re-decide condition.
+13. **Fixes bring new notes on the new text.** After the usage rewrites, each recheck round left
+   fewer style notes on the replacement text: 5, then 3, then 1. Expect this and plan 2-3 short
+   rounds on the changed rows only. Two of the notes: a replacement distractor came close to an
+   idiom (目で 食べる), and a fix word named a place while its option named a direction (行き先 vs
+   海の 方). Change an option's label and its explanation in the same edit.
+14. **Rebuild order.** The workbook manifest stores the checksum of the visual sign-off ledger. If
+   you rebind the ledger after building the workbook, the checksum case fails. Use this order:
+   rebuild the book, rebind the ledger, build the workbook, run the release cases, build the
+   workbook again so it shows the results, write the QA run log, then run the self-audit.
