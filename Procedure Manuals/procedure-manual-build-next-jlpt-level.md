@@ -14556,3 +14556,10 @@ publication-test coverage.
    you rebind the ledger after building the workbook, the checksum case fails. Use this order:
    rebuild the book, rebind the ledger, build the workbook, run the release cases, build the
    workbook again so it shows the results, write the QA run log, then run the self-audit.
+15. **A full re-run after the fixes.** Checklist round 21 (all 947 rows, 8 parallel reviewers) found
+   0 fails and 27 style notes. 20 were applied and 7 declined with reasons. Round 22 rechecked the
+   20 changed rows and found 0 fails and 2 notes, both declined, so nothing changed and the loop
+   ended. Two points: write every declined note into the reviewer rules before the next round (a
+   near-truism example was raised in two rounds before it was changed), and check card meanings
+   against all of the card's examples (運 needed 'move' for 運動 and 運転, 起 needed 'happen' for
+   起こる).
