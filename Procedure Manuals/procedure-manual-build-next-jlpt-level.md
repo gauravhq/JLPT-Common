@@ -14563,3 +14563,22 @@ publication-test coverage.
    near-truism example was raised in two rounds before it was changed), and check card meanings
    against all of the card's examples (運 needed 'move' for 運動 and 運転, 起 needed 'happen' for
    起こる).
+16. **Make coverage enforceable, not only listed.** A second external review of the checklist found
+   that its categories were broad enough but the mapping was not provable. Five fixes:
+   - Build a case x content-type applicability table: every detailed language case gets APPLIES or
+     N/A with a reason for every content type (cards, each question type, worked examples, keys,
+     instructions, each extended type, extended keys). Generate the coverage-matrix lists from that
+     table, and have the self-audit check that every cell is decided and every list matches. N4 used
+     171 cases x 15 types.
+   - Separate meaning from format. A script check (katakana vs hiragana) does not show that a reading
+     is an on'yomi. Check the class against KANJIDIC2 on / kun, and check form + reading + sense as one
+     JMdict pair, respecting re_restr, re_nokanji, stagk and stagr, and flagging ateji, gikun and
+     outdated forms. N4: 0 class hits; 6 pair hits, all standard words (時計, 真面目, 試合, 風邪),
+     accepted with reasons. Accept by form + reading, not by form alone, or a wrong reading of an
+     accepted word slips through.
+   - Add a qualified-human whole-book gate. AI and dictionary checks support it but do not replace it.
+     Route the native-review cases to the full checklist, not to the bank-items sheet.
+   - Write one level policy (assessed, incidental, enrichment, secondary readings) with its
+     references, so an item cannot pass one level case and fail another.
+   - A case clears only as PASS or with an approved exception. FAIL, BLOCKED, PENDING and NOT_EXECUTED
+     never clear. Mutation-test each new guard.
