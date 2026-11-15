@@ -14582,3 +14582,19 @@ publication-test coverage.
      references, so an item cannot pass one level case and fail another.
    - A case clears only as PASS or with an approved exception. FAIL, BLOCKED, PENDING and NOT_EXECUTED
      never clear. Mutation-test each new guard.
+17. **Execute the whole checklist, one result per case.** Give every case parts: the script it names
+   (from the QA run log), an AI reviewer pass for its language part, a records check for governance,
+   and PENDING for human-only rendered sign-off. Its result is the worst part. Export each row with
+   the cases that apply to it (from the applicability table), not with C1-C6. Run follow-ups for
+   cases a row reviewer cannot judge from text, using the whole-test data (primary readings, test
+   composition, World spread). Rows a reviewer could not judge are not counted as passed. Build the
+   run log before compiling the results; a stale log flipped 7 cases to FAIL in N4.
+   What the detailed cases found after 22 C1-C6 rounds had passed every row:
+   - answer positions on a fixed cycle (the extended set; Worlds 4 and 5; the cumulative test);
+   - the key being the only option printed in kanji;
+   - okurigana or part of speech that gives away the 表記 key;
+   - kanji outside the book's list in explanations;
+   - random-kana distractors;
+   - on readings highlighted where a basic kun word comes first (28 cards);
+   - test-pool text that disagrees with the validator.
+   Row-level checks do not see set-level patterns. Script those patterns.
