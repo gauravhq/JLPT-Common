@@ -14598,3 +14598,107 @@ publication-test coverage.
    - on readings highlighted where a basic kun word comes first (28 cards);
    - test-pool text that disagrees with the validator.
    Row-level checks do not see set-level patterns. Script those patterns.
+18. **Check the options as a set, and the stems for every form of an answer.** Runs 2-4 of the
+   detailed checklist (N4, 2026-11-15) found what row checks and dictionary-form checks missed:
+   - **The centre cue.** When every reading distractor is a one-change variant of the key, the key is
+     the option closest to all the others; a test-wise learner picks it without reading the kanji.
+     In N4 it held in 204 of 281 reading items. Use the JLPT pattern: a 2x2 grid of two believable
+     slips (key, A, B, A+B: voicing, a long vowel dropped or added at the end of an on reading, ょう /
+     ゅう, small ゃゅょ full-size, a dropped ん, a boundary っ). For short readings with no two slips, use
+     on / kun mix-ups and look-alike or same-field words (目: て / みみ / くち). Measure per set how often
+     the key, against a distractor, is the unique centre, outlier, longest and shortest option. After
+     the rebuild N4 had the key as centre in 1 item, a distractor in 16.
+   - **Believable slips only.** Vowel swaps (あっぽ for いっぽ) and long vowels added inside a kun
+     reading (おうもに) are noise. A distractor that is a JMdict reading of the word (りょく for 力,
+     もく for 目) is a second key. A label that names a real reading starts with on / kun.
+   - **Leaks in every form.** A stem must not print another answer of its section as an inflected
+     form (住んで for 住む, まちました for まつ) or as part of a compound (会社 of 会社員). Generate the
+     conjugations from the JMdict part of speech; match kana answers at word starts (spaces), not
+     after removing the spaces. One kana / kanji choice per word per section, unless kana hides an
+     answer or the stem would print the tested kanji.
+   - **Level.** Replace an above-level tested compound with a level word on the same kanji; record
+     an exception only with the reason none exists in the book's kanji.
+   Generators go through the same automated checks as hand edits; the first N4 pass produced
+   distractors that dropped printed okurigana (AC23) and kanji outside the book in labels.
+   - **Check the printed order, not the data order.** The N4 World tests print by question type, so a
+     問題5 reading item prints inside もんだい1. The answer-order check ran on the data order and missed
+     a 3-1-3-1-3-1 stretch; the extended set was checked per section and missed a run of three across
+     a section boundary. Run order checks, and "at least 9 kanji in 問題1/2" counts, on the printed
+     sequence.
+   - **Length per set, too.** In 9 of 20 N4 paraphrase items the key was strictly the longest option.
+     Count it per question type across the book (target: no more than a quarter).
+   - **Hand-written sets need a label check.** A hand set printed ぶの with the label "kun の for 野"
+     (it should be ぶんの). Rebuild each "on / kun X for K" label's option from the key and compare.
+   - **Teach what you test.** A 表記 item tested 明日 = あした, a special reading the book never
+     printed. Either print it on the card as a special reading or test another word. Mark only true
+     special readings: 切手 (き + って) is regular and was wrongly marked.
+   - **Vary the tested kanji.** In 34 N4 compound reading items the generated set varied only the
+     other kanji, so the target kanji was never assessed. Require at least two distractors that change
+     the target kanji's reading; where it has one one-mora reading (理 り, 意 い), record that.
+   - **Same-field distractors need a neutral stem.** When distractors are other real words (目: て /
+     みみ / くち), the stem must fit all four, or the meaning gives the answer (とても あつかった +
+     seasons picked なつ).
+   - **More order patterns.** Beyond runs and cycles, three key pairs in a row (1,1,3,3,2,2), a long
+     section with one position missing, and three or more consecutive blocks that are each a
+     permutation of 1-4 all read as patterns to a reviewer.
+   - **Printed claims are test conditions.** The cumulative test's opener named only "the 143 core
+     kanji" while the pool rule also allowed N5 kanji; the reviewer correctly failed the N5 targets
+     against the printed text. Keep printed scope statements identical to the rule.
+   - **Noun forms leak too (run 7).** A 問題2 stem printed 通り while 通る was another 問題2 answer.
+     Add the masu-stem noun of each verb answer to the leak forms. Apply one level list to the World
+     tests and the extended set; a list scoped to one part invites whack-a-mole in the other.
+   - **A compound can give away a reading (run 8).** When one item tests a kanji's reading and another
+     item in the same unit prints a compound whose options all keep that kanji's reading, the learner
+     reads the answer off the second item. Scan for it (N4: reading_reveal_scan.py).
+   - **Staircases (run 8).** Four keys stepping 1-2-3-4 or 4-3-2-1 read as a pattern; add it to the
+     order checks on the printed sequence. Answer-key labels for same-field words give the meaning
+     ("まって means 'wait'"), not a kanji from a later World.
+   - **One spelling per test, not per section (run 9).** A per-section kana / kanji scan missed 18
+     words spelled one way in a stem and the other way in an option or worked example of the same
+     test. Scan every text of a test together (N4: x05_scan.py, with a recorded list of kana kept to
+     hide another answer). Fixing one item can move the mismatch to another: rerun the scan after
+     every fix (MOCK-M2-Q12 答え moved it to MOCK-M3-Q22, whose own distractor was 答え).
+   - **Match words on their lemma, and scan worked-example options (run 10).** A surface-string scan
+     missed たべます against 食べて and なつやすみ against なつ休み, and did not read worked-example
+     options; 9 of run 10's 11 fails were this class. A morphological lemma (UniDic via fugashi) catches conjugated
+     and mixed spellings and keeps homographs apart (かぜ = 風邪, not 風). Known tagger gaps: a
+     one-word option alone (のみます tags as the adverb のみ; scan it in a carrier) and のみます after a
+     て-form (split into の + み). Mutation-test the scan on each gap. Worked-example option sets print
+     all their in-scope kanji, so the key is never the only kanji or kana option.
+   - **A tagger is not enough on its own (run 11).** The lemma scan skipped pronouns (わたし / 私), read
+     毎ばん as 毎 + ば + ん, took kana あめ as 飴, and treated a suffix (よみ + にくい) as part of a kana
+     word. Add a reading pass: compare each kana word with the JMdict readings of the kanji words, and
+     with per-kanji readings (2+ kana each) for mixed spellings, then list homographs (かみ = 紙, てん = 点)
+     once. Count a 問題2 distractor spelling as printed kanji, but not the 問題2 key. Set the threshold
+     for cross-item reading cues explicitly: N4 counts a cue only when it decides the other item; an
+     on'yomi distractor for a kun word is the standard JLPT distractor and stays.
+   - **Worked examples follow the item rules (runs 16-24).** A worked example is printed teaching, so
+     it obeys every rule its section's items obey: no centre key, options that all fit the sentence,
+     in-scope kanji printed, a 表記 key whose kana shape a distractor shares, a 用法 example that
+     misuses the word rather than an odd situation, and no reading printed that decides a reading item.
+     Scan worked examples together with the items (N4 scanned them separately at first and found
+     stale and leaking examples three runs later).
+   - **Centre cue at every level, unaligned options included (runs 19, 23, 25).** The key can be the
+     centre per character, per kanji segment, or with a truncated slip (よちゅ, したちょ) that does
+     not align to any reading. Align only the key, treat a distractor as "changes segment i" when it
+     equals the key with segment i replaced, and flag a set where every distractor changes one segment
+     and at least two segments change. Fix with a 2x2 grid; avoid a corner that is itself a reading of
+     the word (やちゅう for 夜中).
+   - **Measure a suspected cue before acting (run 24).** "The key is the cleanest option" (fewest
+     dakuten, longest) found the N4 key in 83 of 281 reading items, 30% against 25% for a blind guess,
+     so it was recorded as no systematic cue and left alone.
+   - **Distractor level by part (run 16).** World-test distractors: N4 / N5 or card words, or words
+     recorded with a reason. Extended-set 問題2 / 3 distractors may be common N3 words built from the
+     book's kanji; formal or technical ones are replaced.
+   - **Labels and underlines (runs 17, 22).** Every 問題3 CORRECT label names the key; every 問題4 stem
+     prints its underline (the extended renderer had dropped it for 15 items); a 問題4 key does not
+     alone repeat a stem word or kanji.
+   - **Cards show the everyday kun forms the book uses (runs 23, 25).** Compare a kun reading's FIRST
+     okurigana kana with the examples (転がる does not show ころ(ぶ), 通る does not show とお(す)); rare
+     kun need no example. Counters in kana follow the counter's sound change (三がい for a floor; 三かい
+     spells 三回).
+   - **Run the card-data verifier after every card edit (run 26).** 25 reviewer runs passed two card
+     regressions that tools/verify_kanji_data.py catches: two examples sharing a first gloss word (黒 /
+     黒い 'black') and an example reading not decomposable from the card's readings (建物; documented
+     there as a 常用漢字表 example of たてる). Add every data verifier to the per-round bug-fix
+     verification, not only the release run.
